@@ -1,0 +1,242 @@
+:root {
+    --color-primary: #4a90d9;
+    --color-primary-dark: #3672ad;
+    --color-bg: #f4f6fb;
+    --color-surface: #ffffff;
+    --color-text: #2c3344;
+    --color-muted: #6b7280;
+    --color-border: #e5e9f2;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(20, 30, 60, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Header */
+.site-header {
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow);
+}
+
+.header-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.brand:hover {
+    text-decoration: none;
+}
+
+.site-header nav a {
+    margin-left: 24px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.site-header nav a:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+/* Layout */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    min-height: calc(100vh - 140px);
+}
+
+h1 {
+    color: var(--color-text);
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+}
+
+/* Hero (home page) */
+.hero {
+    text-align: center;
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 60px 30px;
+}
+
+.hero h1 {
+    border-bottom: none;
+    font-size: 2rem;
+}
+
+.hero p {
+    color: var(--color-muted);
+    font-size: 1.05rem;
+}
+
+.hero-actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: var(--radius);
+    background-color: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn:hover {
+    background-color: var(--color-primary-dark);
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-bg);
+}
+
+/* Table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.table th {
+    background-color: var(--color-primary);
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+}
+
+.table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table tr:nth-child(even) {
+    background-color: #f8faff;
+}
+
+.table tr:hover {
+    background-color: #eef4fd;
+}
+
+.empty-row {
+    text-align: center;
+    color: var(--color-muted);
+    padding: 24px;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.badge.paid    { background: #d4edda; color: #155724; }
+.badge.pending { background: #fff3cd; color: #856404; }
+.badge.overdue { background: #f8d7da; color: #721c24; }
+
+/* Cards (customers page) */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.card h3 {
+    margin: 0 0 8px;
+}
+
+.card .amount {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+}
+
+/* Detail card (invoice detail page) */
+.detail-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+}
+
+.detail-card dl {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 12px 16px;
+    margin: 0 0 24px;
+}
+
+.detail-card dt {
+    color: var(--color-muted);
+    font-weight: 600;
+}
+
+.detail-card dd {
+    margin: 0;
+}
+
+/* Footer */
+.site-footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--color-border);
+}

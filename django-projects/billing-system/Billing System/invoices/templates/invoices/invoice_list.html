@@ -1,0 +1,44 @@
+{% extends "invoices/base.html" %}
+
+{% block title %}Invoices · Billing System{% endblock %}
+
+{% block content %}
+<h1>Invoice List</h1>
+<p><a class="btn" href="{% url 'invoice-create' %}">+ Add New Invoice</a></p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Invoice #</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Date Created</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for invoice in all_invoices %}
+        <tr>
+            <td><a href="{% url 'invoice-detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td>
+            <td>{{ invoice.customer_name }}</td>
+            <td>&#8377;{{ invoice.amount }}</td>
+            <td>{{ invoice.date_created }}</td>
+            <td>
+                {% if invoice.is_paid %}
+                <span class="badge paid">Paid</span>
+                {% else %}
+                <span class="badge pending">Unpaid</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'invoice-update' invoice.pk %}">Edit</a> |
+                <a href="{% url 'invoice-delete' invoice.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="empty-row">No invoices yet. Add one above.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

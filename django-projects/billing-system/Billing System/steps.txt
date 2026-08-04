@@ -1,0 +1,67 @@
+step-1 
+create a box
+python3 -m venv venv
+
+step-2
+inside a box
+
+Scripts\activate
+
+step-3 
+install django
+
+step-4 
+verification
+
+activate
+source venv/bin/activate
+
+
+------------------
+startproject
+djang-admin -> 
+startproject -> new project building
+
+django-admin startproject mysite .
+
+yourwebsite.com/home
+yourwebsite.com/courses
+
+5 invoice
+
+cardiology department -> A, Floor 2
+children -> B, floor 1
+X-Ray -> C, Ground floor
+emergency -> A, Ground floor 
+
+is the system web address 
+/home -> decide which page> user
+
+
+path('/address', view_function, name='nickname)
+
+3 parameters
+'/invoices'
+site.com/invoices
+
+{{ variable_name }}
+
+ data = {
+        'customer_name':"rahul",
+        'invoice_total':15000,
+    }
+
+
+{% tag %}
+
+{{ variable_name | filter_name }}
+{{ variable_name | upper }}
+{{ variable_name | lower }}
+{{ variable_name | date:"d M Y" }}
+2026-01-01 > 1 Jan 2026
+Rahul Sharma -> RAHUL SHARMA 
+rahul sharma
+
+- filter name 
+
+SELECT * FROM invoices_invoice WHERE is_paid = False;

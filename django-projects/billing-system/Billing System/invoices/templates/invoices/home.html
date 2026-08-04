@@ -1,0 +1,14 @@
+{% extends "invoices/base.html" %}
+
+{% block title %}Home · Billing System{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Welcome to the Billing System</h1>
+    <p>Create and manage invoices from one simple dashboard.</p>
+    <div class="hero-actions">
+        <a class="btn" href="{% url 'all-invoices' %}">View Invoices</a>
+        <a class="btn btn-secondary" href="{% url 'invoice-create' %}">Add New Invoice</a>
+    </div>
+</section>
+{% endblock %}

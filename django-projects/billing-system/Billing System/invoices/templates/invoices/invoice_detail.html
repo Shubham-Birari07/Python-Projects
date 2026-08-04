@@ -1,0 +1,32 @@
+{% extends "invoices/base.html" %}
+
+{% block title %}Invoice {{ invoice.invoice_number }} · Billing System{% endblock %}
+
+{% block content %}
+<h1>Invoice {{ invoice.invoice_number }}</h1>
+
+<div class="detail-card">
+    <dl>
+        <dt>Customer</dt>
+        <dd>{{ invoice.customer_name }}</dd>
+
+        <dt>Amount</dt>
+        <dd>&#8377;{{ invoice.amount }}</dd>
+
+        <dt>Date Created</dt>
+        <dd>{{ invoice.date_created }}</dd>
+
+        <dt>Status</dt>
+        <dd>
+            {% if invoice.is_paid %}
+            <span class="badge paid">Paid</span>
+            {% else %}
+            <span class="badge pending">Unpaid</span>
+            {% endif %}
+        </dd>
+    </dl>
+
+    <a class="btn" href="{% url 'invoice-update' invoice.pk %}">Edit</a>
+    <a class="btn btn-secondary" href="{% url 'all-invoices' %}">&larr; Back to Invoices</a>
+</div>
+{% endblock %}

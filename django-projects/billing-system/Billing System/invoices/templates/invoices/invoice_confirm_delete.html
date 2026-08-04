@@ -1,0 +1,18 @@
+{% extends "invoices/base.html" %}
+
+{% block title %}Delete Invoice · Billing System{% endblock %}
+
+{% block content %}
+<h1>Delete Invoice</h1>
+
+<div class="detail-card">
+    <p>Are you sure you want to delete invoice <strong>{{ object.invoice_number }}</strong>?</p>
+    <p>This action cannot be undone.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a class="btn btn-secondary" href="{% url 'all-invoices' %}">Cancel</a>
+    </form>
+</div>
+{% endblock %}
