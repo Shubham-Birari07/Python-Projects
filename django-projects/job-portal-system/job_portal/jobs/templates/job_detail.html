@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }}{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>{{ job.title }}</h1>
+    <p><strong>Company:</strong> {{ job.company_name }}</p>
+    <p><strong>Location:</strong> {{ job.location }}</p>
+    <p><strong>Salary:</strong> ${{ job.salary }}</p>
+    <p><strong>Posted by:</strong> {{ job.posted_by }} on {{ job.date_posted }}</p>
+    <p>{{ job.description }}</p>
+
+    {% if user.is_authenticated %}
+        {% if already_applied %}
+            <p>You have already applied to this job.</p>
+        {% else %}
+            <form method="post" action="{% url 'apply-to-job' job.pk %}">
+                {% csrf_token %}
+                <button type="submit">Apply</button>
+            </form>
+        {% endif %}
+
+        {% if user == job.posted_by %}
+            <p>
+                <a href="{% url 'job-update' job.pk %}">Edit</a> |
+                <a href="{% url 'job-delete' job.pk %}">Delete</a>
+            </p>
+        {% endif %}
+    {% else %}
+        <p><a href="{% url 'login' %}">Log in</a> to apply.</p>
+    {% endif %}
+</div>
+
+<p><a href="{% url 'job-list' %}">Back to all jobs</a></p>
+{% endblock %}

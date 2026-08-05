@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}My Applications{% endblock %}
+{% block content %}
+<h1>My Applications</h1>
+<ul>
+{% for application in applications %}
+    <li>{{ application.job.title }} at {{ application.job.company_name }} — applied {{ application.date_applied }}</li>
+{% empty %}
+    <li>You haven't applied to any jobs yet.</li>
+{% endfor %}
+</ul>
+{% endblock %}

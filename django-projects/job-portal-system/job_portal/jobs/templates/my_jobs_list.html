@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}My Posted Jobs{% endblock %}
+{% block content %}
+<h1>My Posted Jobs</h1>
+<ul>
+{% for job in jobs %}
+    <li>
+        <a href="{% url 'job-detail' job.pk %}">{{ job.title }}</a>
+        - <a href="{% url 'job-update' job.pk %}">Edit</a>
+        - <a href="{% url 'job-delete' job.pk %}">Delete</a>
+    </li>
+{% empty %}
+    <li>You haven't posted any jobs yet.</li>
+{% endfor %}
+</ul>
+{% endblock %}
