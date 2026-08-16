@@ -1,0 +1,14 @@
+{% extends 'layouts.html' %}
+{% block title %} Tweet App {% endblock %} 
+{% block content %}
+<h1 class= "text-center mt-4">Do you want to Confirm Delete this tweet.</h1>
+<p class="text-center">Tweet: {{ tweet.text }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger", type="submit">Confirm Delete</button>
+    <a href="{% url 'tweet_list' %}" class="btn btn-success">Back to Tweet List</a>
+</form>
+
+{% endblock %}
+
