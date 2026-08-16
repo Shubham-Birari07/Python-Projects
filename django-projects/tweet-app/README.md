@@ -536,7 +536,7 @@ If this project is for a college assignment or portfolio, you can also replace t
 
 ## 👨‍💻 Author
 
-**Your Name**
+**Shubham Birari**
 
 GitHub: `https://github.com/<your-username>`
 
