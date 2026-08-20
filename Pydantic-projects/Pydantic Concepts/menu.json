@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "name": "Paneer Tikka",
+    "price": 220.0,
+    "category": "starter",
+    "is_available": true,
+    "description": "Smoky cottage cheese cubes marinated in spices"
+  },
+  {
+    "id": 2,
+    "name": "Butter Chicken",
+    "price": 320.0,
+    "category": "main course",
+    "is_available": true,
+    "description": "Creamy tomato based chicken curry"
+  },
+  {
+    "id": 3,
+    "name": "Dal Makhani",
+    "price": 180.0,
+    "category": "main course",
+    "is_available": true,
+    "description": "Slow cooked black lentils in butter and cream"
+  },
+  {
+    "id": 4,
+    "name": "Masala Chai",
+    "price": 30.0,
+    "category": "beverage",
+    "is_available": true,
+    "description": "Spiced Indian tea"
+  },
+  {
+    "id": 5,
+    "name": "Gulab Jamun",
+    "price": 60.0,
+    "category": "dessert",
+    "is_available": true,
+    "description": "Fried milk solids soaked in sugar syrup"
+  },
+  {
+    "id": 6,
+    "name": "Veg Biryani",
+    "price": -150.0,
+    "category": "main course",
+    "is_available": true,
+    "description": "BROKEN: negative price, will fail gt=0"
+  },
+  {
+    "id": 7,
+    "name": "CB",
+    "price": 90.0,
+    "category": "starter",
+    "is_available": true,
+    "description": "BROKEN: name too short, will fail min_length=3"
+  },
+  {
+    "id": 8,
+    "name": "Cold Coffee",
+    "price": "fifty",
+    "category": "beverage",
+    "is_available": true,
+    "description": "BROKEN: price is a string, will fail type coercion"
+  },
+  {
+    "id": 9,
+    "name": "Samosa",
+    "price": 25.0,
+    "category": "snacks",
+    "is_available": true,
+    "description": "Crispy fried pastry with spiced potato filling"
+  },
+  {
+    "id": 10,
+    "name": "Rasgulla",
+    "price": 70.0,
+    "category": "dessert",
+    "is_available": false,
+    "description": "Soft spongy balls in light sugar syrup"
+  }
+]

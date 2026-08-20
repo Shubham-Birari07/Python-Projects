@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Data Checkpoint — Pydantic, Explained Simply | Sheryians AI School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1116;
+    --bg-elevated:#151A21;
+    --bg-card:#1A212B;
+    --bg-card-2:#1F2733;
+    --border:#2B3342;
+    --text:#F2EEE3;
+    --text-muted:#9AA3B0;
+    --text-faint:#6B7280;
+    --brass:#D4A24E;
+    --brass-soft:rgba(212,162,78,0.14);
+    --teal:#4FB286;
+    --teal-soft:rgba(79,178,134,0.14);
+    --red:#E2574C;
+    --red-soft:rgba(226,87,76,0.14);
+    --font-display:'Bebas Neue','Arial Narrow',sans-serif;
+    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+    --radius:12px;
+    --maxw:1240px;
+    --header-h:68px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  :focus-visible{
+    outline:2px solid var(--brass);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  /* ---------- background texture ---------- */
+  body{
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(212,162,78,0.05), transparent 40%),
+      radial-gradient(circle at 85% 60%, rgba(79,178,134,0.04), transparent 45%);
+    background-attachment:fixed;
+  }
+
+  /* ---------- header ---------- */
+  .site-header{
+    position:sticky; top:0; z-index:50;
+    height:var(--header-h);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px;
+    background:rgba(14,17,22,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex; flex-direction:column; line-height:1.1; min-width:0;}
+  .brand-eyebrow{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:2.5px;
+    color:var(--brass);
+    text-transform:uppercase;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .brand-title{
+    font-family:var(--font-display);
+    font-size:26px;
+    letter-spacing:1px;
+    color:var(--text);
+  }
+
+  .passport-counter{
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    padding:6px 14px 6px 10px;
+    border-radius:999px;
+  }
+  .stamp-icon{
+    width:22px; height:22px; color:var(--brass);
+    transform-origin:center;
+  }
+  .stamp-icon.pulse{
+    animation:stampThump 420ms cubic-bezier(.36,1.6,.4,1);
+  }
+  @keyframes stampThump{
+    0%{transform:scale(1.6) rotate(-12deg); opacity:0.4;}
+    55%{transform:scale(0.9) rotate(2deg); opacity:1;}
+    100%{transform:scale(1) rotate(0deg);}
+  }
+  .counter-text{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--text-muted);
+    letter-spacing:0.5px;
+    white-space:nowrap;
+  }
+  .counter-text strong{color:var(--text); font-weight:600;}
+
+  /* ---------- layout ---------- */
+  .layout{
+    max-width:var(--maxw);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:260px 1fr;
+    align-items:start;
+  }
+
+  .station-nav{
+    position:sticky;
+    top:var(--header-h);
+    height:calc(100vh - var(--header-h));
+    overflow-y:auto;
+    padding:24px 12px 40px 24px;
+    border-right:1px solid var(--border);
+  }
+  .station-nav ol{
+    list-style:none; margin:0; padding:0;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .station-nav a{
+    display:flex; align-items:center; gap:10px;
+    text-decoration:none;
+    padding:9px 10px;
+    border-radius:8px;
+    color:var(--text-muted);
+    font-size:13.5px;
+    transition:background 150ms ease, color 150ms ease;
+  }
+  .station-nav a:hover{background:var(--bg-card); color:var(--text);}
+  .station-nav a.active{background:var(--brass-soft); color:var(--brass);}
+
+  .nav-dot{
+    flex:0 0 auto;
+    width:18px; height:18px;
+    border-radius:50%;
+    border:1.5px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono);
+    font-size:9px;
+    color:var(--text-faint);
+    transition:all 200ms ease;
+  }
+  .station-nav a.visited .nav-dot{
+    background:var(--teal-soft);
+    border-color:var(--teal);
+    color:var(--teal);
+  }
+  .station-nav a.visited .nav-dot::after{content:"✓";}
+  .station-nav a:not(.visited) .nav-dot::after{content:attr(data-num);}
+
+  .main{padding:0 28px 100px 32px; min-width:0;}
+
+  /* ---------- mobile nav ---------- */
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;}
+    .station-nav{
+      position:sticky; top:var(--header-h); height:auto;
+      border-right:none; border-bottom:1px solid var(--border);
+      padding:10px 16px;
+      background:rgba(14,17,22,0.96);
+      backdrop-filter:blur(10px);
+      z-index:40;
+    }
+    .station-nav ol{flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:4px;}
+    .station-nav a{white-space:nowrap; flex:0 0 auto;}
+    .nav-label{display:none;}
+    .main{padding:0 18px 80px;}
+  }
+
+  /* ---------- hero ---------- */
+  .hero{padding:48px 0 36px; border-bottom:1px solid var(--border); margin-bottom:48px;}
+  .hero-eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:3px;
+    color:var(--brass); text-transform:uppercase; margin-bottom:10px;
+  }
+  .hero h1{
+    font-family:var(--font-display);
+    font-size:clamp(40px,6vw,64px);
+    letter-spacing:0.5px;
+    margin:0 0 16px;
+    line-height:1.02;
+  }
+  .hero h1 span{color:var(--brass);}
+  .hero p.lede{
+    max-width:640px; color:var(--text-muted); font-size:16.5px; margin:0 0 32px;
+  }
+
+  /* two-lane interactive */
+  .lane-toggle-wrap{margin-top:8px;}
+  .lane-toggle-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--bg-card); border:1px solid var(--border);
+    color:var(--text); padding:9px 16px; border-radius:999px;
+    cursor:pointer; font-size:13px; font-weight:600;
+    margin-bottom:20px;
+  }
+  .lane-toggle-btn:hover{border-color:var(--brass);}
+  .lane-toggle-btn svg{width:15px; height:15px; color:var(--brass);}
+
+  .lane-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:700px){.lane-grid{grid-template-columns:1fr;}}
+  .lane{
+    border:1px solid var(--border); border-radius:var(--radius);
+    padding:22px; background:var(--bg-card);
+    opacity:0.45; transform:scale(0.99);
+    transition:all 280ms ease;
+  }
+  .lane.active{
+    opacity:1; transform:scale(1);
+    border-color:var(--red);
+    box-shadow:0 0 0 1px var(--red-soft);
+  }
+  .lane.lane-safe.active{border-color:var(--teal); box-shadow:0 0 0 1px var(--teal-soft);}
+  .lane-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--text-faint); margin-bottom:10px;
+  }
+  .lane.active .lane-label{color:var(--red);}
+  .lane.lane-safe.active .lane-label{color:var(--teal);}
+  .lane-flow{display:flex; align-items:center; gap:8px; margin:14px 0; flex-wrap:wrap;}
+  .lane-step{
+    display:flex; align-items:center; gap:6px;
+    background:var(--bg-card-2); border:1px solid var(--border);
+    padding:6px 10px; border-radius:8px; font-size:12.5px; color:var(--text-muted);
+  }
+  .lane-step svg{width:14px; height:14px;}
+  .lane-arrow{color:var(--text-faint); font-size:14px;}
+  .lane-result{
+    margin-top:14px; padding:12px 14px; border-radius:8px; font-size:13px;
+  }
+  .lane.active .lane-result{background:var(--red-soft); color:#F3B3AD;}
+  .lane.lane-safe.active .lane-result{background:var(--teal-soft); color:#A9E0C7;}
+
+  /* ---------- station shell ---------- */
+  .station{
+    padding:56px 0;
+    border-bottom:1px solid var(--border);
+    scroll-margin-top:calc(var(--header-h) + 16px);
+  }
+  .station:last-of-type{border-bottom:none;}
+  .station-eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:2.5px;
+    color:var(--brass); text-transform:uppercase; margin-bottom:8px;
+  }
+  .station-title{
+    font-family:var(--font-display);
+    font-size:clamp(28px,3.6vw,38px);
+    letter-spacing:0.4px; margin:0 0 16px;
+  }
+  .station-intro{
+    color:var(--text-muted); font-size:15.5px; max-width:740px; margin:0 0 30px;
+  }
+  .station-intro strong{color:var(--text); font-weight:600;}
+
+  .widget-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px;
+    color:var(--text-faint); text-transform:uppercase; margin-bottom:14px;
+  }
+
+  /* ---------- generic card ---------- */
+  .card-grid{display:grid; gap:14px;}
+  .card-grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .card-grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  @media (max-width:760px){
+    .card-grid.cols-3, .card-grid.cols-2{grid-template-columns:1fr;}
+  }
+
+  /* ---------- flip cards ---------- */
+  .flip-card{
+    perspective:1200px; height:178px; cursor:pointer;
+  }
+  .flip-card-inner{
+    position:relative; width:100%; height:100%;
+    transition:transform 500ms cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .flip-card.flipped .flip-card-inner{transform:rotateY(180deg);}
+  .flip-front, .flip-back{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    padding:18px;
+    display:flex; flex-direction:column;
+  }
+  .flip-front{background:var(--bg-card);}
+  .flip-back{
+    background:var(--bg-card-2);
+    transform:rotateY(180deg);
+    border-color:var(--brass);
+  }
+  .flip-icon{width:22px; height:22px; color:var(--brass); margin-bottom:10px;}
+  .flip-title{font-weight:700; font-size:15px; margin-bottom:6px;}
+  .flip-sub{font-size:12.5px; color:var(--text-faint); margin-top:auto;}
+  .flip-back .flip-sub{color:var(--brass); font-weight:600;}
+  .flip-back p{font-size:13.5px; color:var(--text-muted); margin:0;}
+
+  /* ---------- toggle switch ---------- */
+  .toggle-widget{
+    background:var(--bg-card); border:1px solid var(--border);
+    border-radius:var(--radius); padding:22px;
+  }
+  .toggle-row{display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap;}
+  .toggle-switch{
+    position:relative; width:64px; height:32px;
+    background:var(--bg-card-2); border:1px solid var(--border);
+    border-radius:999px; cursor:pointer; flex:0 0 auto;
+  }
+  .toggle-switch::after{
+    content:""; position:absolute; top:3px; left:3px;
+    width:24px; height:24px; border-radius:50%;
+    background:var(--brass);
+    transition:transform 220ms ease;
+  }
+  .toggle-switch.on::after{transform:translateX(30px); background:var(--teal);}
+  .toggle-side{font-size:13px; font-weight:600; color:var(--text-faint);}
+  .toggle-side.active{color:var(--text);}
+  .toggle-display{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  }
+  @media (max-width:600px){.toggle-display{grid-template-columns:1fr;}}
+  .toggle-panel{
+    background:var(--bg-card-2); border:1px solid var(--border);
+    border-radius:10px; padding:16px; font-size:13.5px; color:var(--text-muted);
+  }
+  .toggle-panel-title{font-weight:700; color:var(--text); margin-bottom:6px; font-size:13px;}
+  .pill{
+    display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:2px 9px; border-radius:999px; margin-bottom:8px; font-weight:600;
+  }
+  .pill.ok{background:var(--teal-soft); color:var(--teal);}
+  .pill.no{background:var(--red-soft); color:var(--red);}
+
+  /* ---------- tabs ---------- */
+  .tabs-widget{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:6px;}
+  .tab-list{display:flex; gap:4px; flex-wrap:wrap; padding:10px 10px 4px;}
+  .tab-btn{
+    background:transparent; border:1px solid var(--border); color:var(--text-muted);
+    padding:8px 14px; border-radius:8px; cursor:pointer; font-size:12.5px; font-weight:600;
+  }
+  .tab-btn.active{background:var(--brass-soft); border-color:var(--brass); color:var(--brass);}
+  .tab-panel{display:none; padding:18px; font-size:14px; color:var(--text-muted);}
+  .tab-panel.active{display:block;}
+  .tab-panel h4{color:var(--text); margin:0 0 8px; font-size:15px;}
+
+  /* ---------- accordion ---------- */
+  .accordion-item{border:1px solid var(--border); border-radius:10px; margin-bottom:8px; overflow:hidden; background:var(--bg-card);}
+  .accordion-header{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:transparent; border:none; color:var(--text); padding:14px 16px;
+    cursor:pointer; font-size:14.5px; font-weight:600; text-align:left;
+  }
+  .accordion-header svg{width:16px; height:16px; color:var(--text-faint); transition:transform 220ms ease; flex:0 0 auto;}
+  .accordion-item.open .accordion-header svg{transform:rotate(45deg); color:var(--brass);}
+  .accordion-body{
+    max-height:0; overflow:hidden; transition:max-height 280ms ease;
+    padding:0 16px; font-size:13.5px; color:var(--text-muted);
+  }
+  .accordion-item.open .accordion-body{max-height:220px; padding:0 16px 16px;}
+
+  /* ---------- quiz ---------- */
+  .quiz-widget{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:22px;}
+  .quiz-question{font-size:15px; font-weight:600; margin-bottom:14px;}
+  .quiz-options{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+  .quiz-option{
+    background:var(--bg-card-2); border:1px solid var(--border); color:var(--text);
+    padding:9px 16px; border-radius:8px; cursor:pointer; font-size:13.5px; font-weight:600;
+  }
+  .quiz-option:hover{border-color:var(--brass);}
+  .quiz-option.correct{background:var(--teal-soft); border-color:var(--teal); color:var(--teal);}
+  .quiz-option.wrong{background:var(--red-soft); border-color:var(--red); color:var(--red);}
+  .quiz-feedback{
+    font-size:13.5px; padding:12px 14px; border-radius:8px; display:none;
+    background:var(--bg-card-2); color:var(--text-muted); border:1px solid var(--border);
+  }
+  .quiz-feedback.show{display:block;}
+
+  /* ---------- scanner gallery (station 9) ---------- */
+  .scanner-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:12px;}
+  @media (max-width:900px){.scanner-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:480px){.scanner-grid{grid-template-columns:1fr;}}
+  .scanner-card{
+    background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+    padding:16px; cursor:pointer; transition:border-color 180ms ease, background 180ms ease;
+  }
+  .scanner-card:hover, .scanner-card.open{border-color:var(--brass); background:var(--bg-card-2);}
+  .scanner-icon{width:24px; height:24px; color:var(--brass); margin-bottom:10px;}
+  .scanner-title{font-weight:700; font-size:13.5px; margin-bottom:6px;}
+  .scanner-desc{font-size:12.5px; color:var(--text-faint); display:none; line-height:1.5;}
+  .scanner-card.open .scanner-desc{display:block;}
+
+  /* ---------- nested dolls (station 4) ---------- */
+  .nest-wrap{
+    background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:28px; display:flex; flex-direction:column; align-items:center; gap:0;
+  }
+  .nest-level{
+    width:100%; border:1.5px dashed var(--border); border-radius:14px;
+    padding:22px; text-align:center; cursor:pointer;
+    transition:all 260ms ease;
+  }
+  .nest-level + .nest-level{margin-top:-1px;}
+  .nest-level-1{max-width:480px;}
+  .nest-level-2{max-width:360px; border-color:var(--text-faint);}
+  .nest-level-3{max-width:240px; border-color:var(--brass); border-style:solid; background:var(--brass-soft);}
+  .nest-name{font-weight:700; font-size:14px; margin-bottom:4px;}
+  .nest-hint{font-size:12px; color:var(--text-faint);}
+  .nest-level-3 .nest-hint{color:var(--brass);}
+  .nest-arrow{color:var(--text-faint); font-size:18px; margin:6px 0;}
+  .nest-level.hidden{display:none;}
+
+  /* ---------- config panel (station 7) ---------- */
+  .config-panel{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:8px 22px;}
+  .config-row{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0; border-bottom:1px solid var(--border); flex-wrap:wrap;}
+  .config-row:last-child{border-bottom:none;}
+  .config-info{flex:1; min-width:220px;}
+  .config-name{font-weight:700; font-size:14.5px; margin-bottom:4px;}
+  .config-desc{font-size:13px; color:var(--text-faint); max-width:480px;}
+  .config-desc .effect{color:var(--brass); font-weight:600;}
+
+  /* ---------- rejection slip (station 11) ---------- */
+  .inspect-widget{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:center;}
+  .inspect-btn{
+    background:var(--brass); color:#1a1406; border:none; font-weight:700;
+    padding:12px 26px; border-radius:999px; cursor:pointer; font-size:14px;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .inspect-btn svg{width:16px; height:16px;}
+  .slip{
+    margin-top:20px; max-width:480px; margin-left:auto; margin-right:auto;
+    background:var(--bg-card-2); border:1.5px dashed var(--red);
+    border-radius:10px; padding:20px; text-align:left;
+    opacity:0; transform:translateY(-8px); max-height:0; overflow:hidden;
+    transition:all 320ms ease;
+  }
+  .slip.show{opacity:1; transform:translateY(0); max-height:400px; padding:20px;}
+  .slip-header{display:flex; align-items:center; gap:8px; color:var(--red); font-weight:700; font-size:13px; margin-bottom:14px; text-transform:uppercase; letter-spacing:1px;}
+  .slip-header svg{width:16px; height:16px;}
+  .slip-item{display:flex; gap:10px; margin-bottom:12px; font-size:13px;}
+  .slip-field{font-family:var(--font-mono); color:var(--brass); flex:0 0 auto; min-width:90px;}
+  .slip-reason{color:var(--text-muted);}
+
+  /* ---------- project cards ---------- */
+  .project-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:900px){.project-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.project-grid{grid-template-columns:1fr;}}
+  .project-card{
+    background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px; cursor:pointer;
+  }
+  .project-card:hover{border-color:var(--teal);}
+  .project-icon{width:24px; height:24px; color:var(--teal); margin-bottom:12px;}
+  .project-title{font-weight:700; font-size:14.5px; margin-bottom:8px;}
+  .project-desc{font-size:12.5px; color:var(--text-faint); max-height:0; overflow:hidden; transition:max-height 260ms ease;}
+  .project-card.open .project-desc{max-height:120px;}
+
+  /* ---------- footer ---------- */
+  .site-footer{
+    text-align:center; padding:50px 20px 70px; color:var(--text-faint); font-size:13px;
+  }
+  .site-footer strong{color:var(--brass);}
+</style>
+</head>
+<body>
+
+<!-- ============ ICON SPRITE ============ -->
+<svg style="display:none">
+  <defs style="stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;">
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M15 2v5h5"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="4 13 9 18 20 6"/></symbol>
+    <symbol id="i-cross" viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="0.7" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-stamp" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M9 9.3l2 2 4-4.2"/><path d="M7.5 21l1.3-6h6.4l1.3 6"/><line x1="5.5" y1="21" x2="18.5" y2="21"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="5" y1="3" x2="5" y2="21"/><circle cx="5" cy="9" r="2" fill="currentColor" stroke="none"/><line x1="12" y1="3" x2="12" y2="21"/><circle cx="12" cy="15" r="2" fill="currentColor" stroke="none"/><line x1="19" y1="3" x2="19" y2="21"/><circle cx="19" cy="7" r="2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 11V4a1 1 0 0 1 1-1h7l10 10-8 8L3 11z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><circle cx="8" cy="11" r="0.9" fill="currentColor" stroke="none"/><circle cx="12" cy="11" r="0.9" fill="currentColor" stroke="none"/><circle cx="16" cy="11" r="0.9" fill="currentColor" stroke="none"/><circle cx="8" cy="15" r="0.9" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="0.9" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="0.9" fill="currentColor" stroke="none"/><circle cx="8" cy="19" r="0.9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="0.9" fill="currentColor" stroke="none"/><circle cx="16" cy="19" r="0.9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6.5l9 6.5 9-6.5"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M8 11l-2.5 2.5a3.5 3.5 0 0 0 5 5L13 16"/><path d="M16 13l2.5-2.5a3.5 3.5 0 0 0-5-5L11 8"/></symbol>
+    <symbol id="i-fingerprint" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 1 9 9v3.5"/><path d="M12 6.2a5.8 5.8 0 0 1 5.8 5.8v4"/><path d="M12 9.4a2.6 2.6 0 0 1 2.6 2.6v5.5"/><path d="M6.2 12a5.8 5.8 0 0 1 5.8-5.8"/><path d="M3 12a9 9 0 0 1 9-9"/></symbol>
+    <symbol id="i-hash" viewBox="0 0 24 24"><line x1="9" y1="3" x2="7" y2="21"/><line x1="17" y1="3" x2="15" y2="21"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="3" y1="15" x2="19" y2="15"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="7" y1="2" x2="7" y2="6"/><line x1="17" y1="2" x2="17" y2="6"/><circle cx="8.5" cy="15" r="0.9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><polyline points="7 9 11 12 7 15"/><line x1="13" y1="16" x2="17" y2="16"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 3 21 8 12 13 3 8"/><polyline points="3 13 12 18 21 13"/><polyline points="3 17.5 12 22 21 17.5"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M3 8h13"/><polyline points="13 4 17 8 13 12"/><path d="M21 16H8"/><polyline points="11 20 7 16 11 12"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V5l-8-3z"/><polyline points="9 12 11 14 15 9"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><polyline points="3 8 12 13 21 8"/><line x1="12" y1="13" x2="12" y2="22"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <div class="brand">
+    <span class="brand-eyebrow">Sheryians AI School · Pydantic Field Notes</span>
+    <span class="brand-title">THE DATA CHECKPOINT</span>
+  </div>
+  <div class="passport-counter">
+    <svg class="stamp-icon" id="counterStamp"><use href="#i-stamp"></use></svg>
+    <span class="counter-text"><strong id="counterNum">0</strong> / 12 stations cleared</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ============ SIDE NAV ============ -->
+  <nav class="station-nav" aria-label="Stations">
+    <ol id="navList">
+      <li><a href="#station-01" data-num="1"><span class="nav-dot" data-num="1"></span><span class="nav-label">Why Pydantic Exists</span></a></li>
+      <li><a href="#station-02" data-num="2"><span class="nav-dot" data-num="2"></span><span class="nav-label">Building Your First Model</span></a></li>
+      <li><a href="#station-03" data-num="3"><span class="nav-dot" data-num="3"></span><span class="nav-label">Field Rules &amp; Constraints</span></a></li>
+      <li><a href="#station-04" data-num="4"><span class="nav-dot" data-num="4"></span><span class="nav-label">Complex &amp; Nested Data</span></a></li>
+      <li><a href="#station-05" data-num="5"><span class="nav-dot" data-num="5"></span><span class="nav-label">Custom Validators</span></a></li>
+      <li><a href="#station-06" data-num="6"><span class="nav-dot" data-num="6"></span><span class="nav-label">In &amp; Out: Serialization</span></a></li>
+      <li><a href="#station-07" data-num="7"><span class="nav-dot" data-num="7"></span><span class="nav-label">Model Configuration</span></a></li>
+      <li><a href="#station-08" data-num="8"><span class="nav-dot" data-num="8"></span><span class="nav-label">Aliases &amp; Computed Fields</span></a></li>
+      <li><a href="#station-09" data-num="9"><span class="nav-dot" data-num="9"></span><span class="nav-label">Special Data Types</span></a></li>
+      <li><a href="#station-10" data-num="10"><span class="nav-dot" data-num="10"></span><span class="nav-label">Settings Per Environment</span></a></li>
+      <li><a href="#station-11" data-num="11"><span class="nav-dot" data-num="11"></span><span class="nav-label">Reading Validation Errors</span></a></li>
+      <li><a href="#station-12" data-num="12"><span class="nav-dot" data-num="12"></span><span class="nav-label">Real-World Practice</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="main">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="hero-eyebrow">An interactive walk-through, no code involved</div>
+      <h1>Every piece of data<br>passes through <span>a checkpoint.</span></h1>
+      <p class="lede">Pydantic is the officer standing at the door of your program. Before any information is allowed inside, it gets checked: right type, right shape, right rules. Walk through all twelve stations below to understand exactly how that checkpoint works — no code, just the ideas.</p>
+
+      <div class="lane-toggle-wrap">
+        <button class="lane-toggle-btn" id="laneToggleBtn" aria-pressed="false">
+          <svg><use href="#i-swap"></use></svg>
+          <span id="laneToggleText">See what happens without a checkpoint</span>
+        </button>
+      </div>
+
+      <div class="lane-grid">
+        <div class="lane lane-risk" id="laneRisk">
+          <div class="lane-label">Lane A — No Checkpoint</div>
+          <div class="lane-flow">
+            <span class="lane-step"><svg><use href="#i-doc"></use></svg>Messy data</span>
+            <span class="lane-arrow">→</span>
+            <span class="lane-step"><svg><use href="#i-doc"></use></svg>Straight into your program</span>
+            <span class="lane-arrow">→</span>
+            <span class="lane-step"><svg><use href="#i-alert"></use></svg>Breaks somewhere far away</span>
+          </div>
+          <div class="lane-result">The crash happens deep inside your program, nowhere near where the bad data actually entered. You're left guessing what went wrong and where.</div>
+        </div>
+        <div class="lane lane-safe" id="laneSafe">
+          <div class="lane-label">Lane B — With Pydantic</div>
+          <div class="lane-flow">
+            <span class="lane-step"><svg><use href="#i-doc"></use></svg>Messy data</span>
+            <span class="lane-arrow">→</span>
+            <span class="lane-step"><svg><use href="#i-shield"></use></svg>Checkpoint inspects it</span>
+            <span class="lane-arrow">→</span>
+            <span class="lane-step"><svg><use href="#i-check"></use></svg>Only clean data gets in</span>
+          </div>
+          <div class="lane-result">The problem is caught right at the door, with a clear explanation of exactly what was wrong and which field caused it.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 01 ===== -->
+    <section class="station" id="station-01">
+      <div class="station-eyebrow">Station 01</div>
+      <h2 class="station-title">Why Pydantic Exists</h2>
+      <p class="station-intro">Programs assume the data they receive is well-formed. In reality, data arrives from files, forms, other systems, and people — and it is rarely perfect. Pydantic's entire job is to stand at that entry point and refuse to let anything through that doesn't match what your program expects, <strong>before</strong> it causes a confusing failure somewhere else.</p>
+
+      <div class="widget-label">Click a card to flip it</div>
+      <div class="card-grid cols-3">
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: The Problem">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-alert"></use></svg>
+              <div class="flip-title">The Problem</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Without checks, a missing field or wrong type sits quietly in your program until it triggers an error several steps later — far from the actual cause.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: The Fix">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-shield"></use></svg>
+              <div class="flip-title">The Fix</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Pydantic checks data the instant it arrives, and stops it right there if something doesn't match — with a message pointing at the exact field.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Not Just FastAPI">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-box"></use></svg>
+              <div class="flip-title">Not Just FastAPI</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Pydantic is its own independent library. FastAPI happens to use it for request and response checking, but you can use Pydantic anywhere — config files, scripts, pipelines.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 02 ===== -->
+    <section class="station" id="station-02">
+      <div class="station-eyebrow">Station 02</div>
+      <h2 class="station-title">Building Your First Model</h2>
+      <p class="station-intro">A <strong>model</strong> is the official form you design for your data — it states exactly what information is expected, what's mandatory, and what's optional. It also decides how forgiving the checkpoint officer is when something arrives in a slightly different format than expected.</p>
+
+      <div class="widget-label">Required, optional, and default — tap each card</div>
+      <div class="card-grid cols-3" style="margin-bottom:26px;">
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Required Field">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-lock"></use></svg>
+              <div class="flip-title">Required Field</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Like asking for a passport at the border — the form is rejected outright if this piece of information is missing.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Optional Field">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-doc"></use></svg>
+              <div class="flip-title">Optional Field</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Like a travel insurance number — nice to have, but the form is still accepted if it's left blank.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Default Value">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-stamp"></use></svg>
+              <div class="flip-title">Default Value</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>If you don't declare a value, the checkpoint quietly assumes one for you — like assuming "Economy class" if no seat class is stated.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget-label">How strict is the officer? Flip the switch</div>
+      <div class="toggle-widget">
+        <div class="toggle-row">
+          <span class="toggle-side" id="strictLeftLabel">Lenient Officer</span>
+          <div class="toggle-switch" id="strictToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle officer strictness"></div>
+          <span class="toggle-side" id="strictRightLabel">Strict Officer</span>
+        </div>
+        <div class="toggle-display">
+          <div class="toggle-panel">
+            <div class="toggle-panel-title">A traveler hands over: age written as text, "25"</div>
+            <p style="margin:0;">A piece of data arrives in a slightly different format than expected — text instead of a whole number.</p>
+          </div>
+          <div class="toggle-panel" id="strictResultPanel">
+            <span class="pill ok" id="strictPill">ACCEPTED</span>
+            <div class="toggle-panel-title">Converted automatically</div>
+            <p style="margin:0;" id="strictResultText">A lenient officer understands what was meant and quietly converts "25" into the number 25 before letting it through. Convenient, but slightly less precise.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 03 ===== -->
+    <section class="station" id="station-03">
+      <div class="station-eyebrow">Station 03</div>
+      <h2 class="station-title">Field Rules &amp; Constraints</h2>
+      <p class="station-intro">Beyond just "what type is this," you can attach specific rules to a single piece of information — a minimum length, a number range, an exact pattern it must match. You can also attach a plain description, so anyone reading the form later understands what each field means.</p>
+
+      <div class="widget-label">Tap a rule category to see an example</div>
+      <div class="tabs-widget">
+        <div class="tab-list" role="tablist">
+          <button class="tab-btn active" data-tab="t1">Length Rules</button>
+          <button class="tab-btn" data-tab="t2">Range Rules</button>
+          <button class="tab-btn" data-tab="t3">Pattern Rules</button>
+          <button class="tab-btn" data-tab="t4">Description</button>
+        </div>
+        <div class="tab-panel active" id="t1">
+          <h4>Length Rules</h4>
+          <p>A name field might require at least 2 characters and no more than 50. Too short, and the checkpoint assumes it's a typo or placeholder; too long, and something has probably gone wrong upstream.</p>
+        </div>
+        <div class="tab-panel" id="t2">
+          <h4>Range Rules</h4>
+          <p>A price field can require a value greater than zero. An age field might require a value between 0 and 120. Anything outside the range is turned away immediately, no further questions asked.</p>
+        </div>
+        <div class="tab-panel" id="t3">
+          <h4>Pattern Rules</h4>
+          <p>Some fields must follow an exact structure — like a postal code, a product code, or a phone number. A pattern rule checks the data is shaped correctly, even if every individual character is technically valid.</p>
+        </div>
+        <div class="tab-panel" id="t4">
+          <h4>Description &amp; Metadata</h4>
+          <p>You can attach a short note to any field explaining what it means or how it should be used. This doesn't change what's accepted — it simply makes the form self-explanatory for whoever reads it next.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 04 ===== -->
+    <section class="station" id="station-04">
+      <div class="station-eyebrow">Station 04</div>
+      <h2 class="station-title">Complex &amp; Nested Data</h2>
+      <p class="station-intro">Real data is rarely flat. A field might hold a list of items, or a smaller form might live entirely inside a bigger one — and that smaller form can even contain another copy of itself, layer after layer, like a folder inside a folder.</p>
+
+      <div class="widget-label">Tap to open each layer of a nested form</div>
+      <div class="nest-wrap">
+        <div class="nest-level nest-level-1" id="nestLevel1" tabindex="0" role="button" aria-label="Open Order form">
+          <div class="nest-name">Order Form</div>
+          <div class="nest-hint">Tap to open — a Customer lives inside</div>
+        </div>
+        <div class="nest-arrow hidden" id="nestArrow1">↓</div>
+        <div class="nest-level nest-level-2 hidden" id="nestLevel2" tabindex="0" role="button" aria-label="Open Customer form">
+          <div class="nest-name">Customer Form</div>
+          <div class="nest-hint">Tap to open — an Address lives inside</div>
+        </div>
+        <div class="nest-arrow hidden" id="nestArrow2">↓</div>
+        <div class="nest-level nest-level-3 hidden" id="nestLevel3">
+          <div class="nest-name">Address Form</div>
+          <div class="nest-hint">The innermost form — fully validated on its own, then trusted by everything above it</div>
+        </div>
+      </div>
+
+      <div class="widget-label" style="margin-top:28px;">A field that only accepts fixed choices</div>
+      <div class="toggle-widget">
+        <p style="margin:0 0 14px; color:var(--text-muted); font-size:13.5px;">Instead of accepting any text, a field can be limited to a short, fixed list of allowed values — like a dropdown. Tap an option below.</p>
+        <div class="quiz-options" id="enumDemo">
+          <button class="quiz-option" data-val="starter">starter</button>
+          <button class="quiz-option" data-val="main course">main course</button>
+          <button class="quiz-option" data-val="dessert">dessert</button>
+          <button class="quiz-option" data-val="anything else">something random</button>
+        </div>
+        <div class="quiz-feedback" id="enumFeedback"></div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 05 ===== -->
+    <section class="station" id="station-05">
+      <div class="station-eyebrow">Station 05</div>
+      <h2 class="station-title">Custom Validators</h2>
+      <p class="station-intro">Sometimes a type or constraint isn't enough — you need a rule that reasons like a person would, such as "the discount price must be lower than the original price." Validators let you write that logic, and they come in two scopes: checking one field alone, or checking the whole form together.</p>
+
+      <div class="widget-label">Two kinds of officers — tap each step</div>
+      <div class="card-grid cols-2">
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Single-Field Officer">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-shield"></use></svg>
+              <div class="flip-title">Single-Field Officer</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Looks at exactly one piece of information in isolation — for example, making sure an email address actually contains the "@" symbol in a sensible place.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Whole-Form Supervisor">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-list"></use></svg>
+              <div class="flip-title">Whole-Form Supervisor</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Looks at the form as a whole, once every individual field has already passed — catching problems that only show up when two fields are compared, like a password and its confirmation not matching.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget-label" style="margin-top:26px;">When does the check happen?</div>
+      <div class="toggle-widget">
+        <div class="toggle-row">
+          <span class="toggle-side" id="timingLeftLabel">Before Cleanup</span>
+          <div class="toggle-switch" id="timingToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle validation timing"></div>
+          <span class="toggle-side" id="timingRightLabel">After Cleanup</span>
+        </div>
+        <div class="toggle-panel" id="timingPanel">
+          <div class="toggle-panel-title" id="timingTitle">Before Cleanup</div>
+          <p style="margin:0;" id="timingText">This check runs on the raw incoming data, exactly as it arrived — before Pydantic has done any of its standard type checking or conversion.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 06 ===== -->
+    <section class="station" id="station-06">
+      <div class="station-eyebrow">Station 06</div>
+      <h2 class="station-title">In &amp; Out: Serialization</h2>
+      <p class="station-intro">Getting messy outside data into a clean, trusted form is one direction. Turning that clean form back into plain data to send elsewhere — over the internet, into a file — is the other. Pydantic handles both directions.</p>
+
+      <div class="widget-label">Tap to switch direction</div>
+      <div class="toggle-widget">
+        <div class="toggle-row">
+          <span class="toggle-side" id="serialLeftLabel">Incoming</span>
+          <div class="toggle-switch" id="serialToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle serialization direction"></div>
+          <span class="toggle-side" id="serialRightLabel">Outgoing</span>
+        </div>
+        <div class="toggle-panel" id="serialPanel">
+          <div class="toggle-panel-title" id="serialTitle">Incoming — Deserialization</div>
+          <p style="margin:0;" id="serialText">Raw data — like a file or a message from another system — gets checked and converted into a clean, trusted form your program can safely rely on.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 07 ===== -->
+    <section class="station" id="station-07">
+      <div class="station-eyebrow">Station 07</div>
+      <h2 class="station-title">Model Configuration</h2>
+      <p class="station-intro">Configuration controls how an entire form behaves, not just one field — what happens with unexpected extra information, whether the form can be edited once it's filled out, and whether edits get re-checked.</p>
+
+      <div class="widget-label">Flip each switch to see what it controls</div>
+      <div class="config-panel">
+        <div class="config-row">
+          <div class="config-info">
+            <div class="config-name">Extra Fields</div>
+            <div class="config-desc" id="cfgExtraDesc">Decides what happens if data shows up with fields you never defined. <span class="effect">Currently: ignored quietly.</span></div>
+          </div>
+          <div class="toggle-switch" id="cfgExtraToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle extra fields behaviour"></div>
+        </div>
+        <div class="config-row">
+          <div class="config-info">
+            <div class="config-name">Frozen Model</div>
+            <div class="config-desc" id="cfgFrozenDesc">Decides if a form can be changed after it's filled out. <span class="effect">Currently: editable.</span></div>
+          </div>
+          <div class="toggle-switch" id="cfgFrozenToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle frozen model"></div>
+        </div>
+        <div class="config-row">
+          <div class="config-info">
+            <div class="config-name">Strict Mode</div>
+            <div class="config-desc" id="cfgStrictDesc">Decides if the checkpoint accepts close-enough formats. <span class="effect">Currently: flexible matching allowed.</span></div>
+          </div>
+          <div class="toggle-switch" id="cfgStrictToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle strict mode"></div>
+        </div>
+        <div class="config-row">
+          <div class="config-info">
+            <div class="config-name">Validate on Edit</div>
+            <div class="config-desc" id="cfgAssignDesc">Decides if changing a value later gets re-checked against the rules. <span class="effect">Currently: not re-checked.</span></div>
+          </div>
+          <div class="toggle-switch" id="cfgAssignToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle validate on assignment"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 08 ===== -->
+    <section class="station" id="station-08">
+      <div class="station-eyebrow">Station 08</div>
+      <h2 class="station-title">Aliases &amp; Computed Fields</h2>
+      <p class="station-intro">An alias lets a field go by a different name on the outside than the one you use internally — useful when external data follows a different naming style. A computed field never receives a value at all; it's worked out automatically from the other fields.</p>
+
+      <div class="card-grid cols-2">
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Alias">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-tag"></use></svg>
+              <div class="flip-title">Alias</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>The outside world sends a field under one name; internally your program refers to it by a different, more consistent name. Pydantic quietly maps one to the other.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" tabindex="0" role="button" aria-label="Flip card: Computed Field">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <svg class="flip-icon"><use href="#i-calc"></use></svg>
+              <div class="flip-title">Computed Field</div>
+              <div class="flip-sub">Tap to reveal</div>
+            </div>
+            <div class="flip-back">
+              <p>Like an officer who automatically stamps today's date on every form — this field is never filled in by the data itself; it's calculated fresh, every time.</p>
+              <div class="flip-sub">← back</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 09 ===== -->
+    <section class="station" id="station-09">
+      <div class="station-eyebrow">Station 09</div>
+      <h2 class="station-title">Special Data Types</h2>
+      <p class="station-intro">Beyond plain text and numbers, Pydantic already understands many real-world formats out of the box, and double-checks they're properly shaped, not just present. It can also describe your entire model as a formal blueprint that other tools and teams can read.</p>
+
+      <div class="widget-label">Tap a scanner to see what it checks</div>
+      <div class="scanner-grid">
+        <div class="scanner-card" tabindex="0">
+          <svg class="scanner-icon"><use href="#i-mail"></use></svg>
+          <div class="scanner-title">Email Scanner</div>
+          <div class="scanner-desc">Confirms the text is actually shaped like a real email address — not just any string with letters in it.</div>
+        </div>
+        <div class="scanner-card" tabindex="0">
+          <svg class="scanner-icon"><use href="#i-link"></use></svg>
+          <div class="scanner-title">Web Link Scanner</div>
+          <div class="scanner-desc">Confirms a value is a properly structured web address, not just text that happens to contain dots and slashes.</div>
+        </div>
+        <div class="scanner-card" tabindex="0">
+          <svg class="scanner-icon"><use href="#i-fingerprint"></use></svg>
+          <div class="scanner-title">ID Chip Scanner</div>
+          <div class="scanner-desc">Confirms a value is a properly formatted unique identifier, used to tell records apart without any chance of collision.</div>
+        </div>
+        <div class="scanner-card" tabindex="0">
+          <svg class="scanner-icon"><use href="#i-hash"></use></svg>
+          <div class="scanner-title">Exact Decimal Scale</div>
+          <div class="scanner-desc">Confirms a number keeps exact precision — critical for money, where rounding errors are never acceptable.</div>
+        </div>
+        <div class="scanner-card" tabindex="0">
+          <svg class="scanner-icon"><use href="#i-calendar"></use></svg>
+          <div class="scanner-title">Date Stamp Scanner</div>
+          <div class="scanner-desc">Confirms a date or time value is real and properly formatted — no 32nd of the month getting through.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 10 ===== -->
+    <section class="station" id="station-10">
+      <div class="station-eyebrow">Station 10</div>
+      <h2 class="station-title">Settings Per Environment</h2>
+      <p class="station-intro">The same program often needs to behave differently depending on where it's running — a developer's laptop versus a live server used by real customers. Settings management lets a program read its configuration automatically from wherever it happens to be running, instead of having values hardcoded.</p>
+    </section>
+
+    <!-- ===== STATION 11 ===== -->
+    <section class="station" id="station-11">
+      <div class="station-eyebrow">Station 11</div>
+      <h2 class="station-title">Reading Validation Errors</h2>
+      <p class="station-intro">When data fails the checkpoint, Pydantic doesn't just say no — it hands back a detailed report naming exactly which field failed and why. Learning to read this report quickly is one of the most useful everyday skills when working with Pydantic.</p>
+
+      <div class="inspect-widget">
+        <button class="inspect-btn" id="inspectBtn">
+          <svg><use href="#i-alert"></use></svg>
+          Submit a flawed form for inspection
+        </button>
+        <div class="slip" id="rejectionSlip">
+          <div class="slip-header"><svg><use href="#i-cross"></use></svg>Form Rejected — 3 issues found</div>
+          <div class="slip-item"><span class="slip-field">price</span><span class="slip-reason">Value is -150, but must be greater than 0.</span></div>
+          <div class="slip-item"><span class="slip-field">name</span><span class="slip-reason">Only 2 characters given; at least 3 are required.</span></div>
+          <div class="slip-item"><span class="slip-field">category</span><span class="slip-reason">"beverages" is not one of the allowed choices.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATION 12 ===== -->
+    <section class="station" id="station-12">
+      <div class="station-eyebrow">Station 12</div>
+      <h2 class="station-title">Real-World Practice</h2>
+      <p class="station-intro">Every concept above clicks into place fastest when applied to something real. These five practice ideas each lean on a different part of what you just walked through. Tap a card for a one-line brief.</p>
+
+      <div class="project-grid">
+        <div class="project-card" tabindex="0">
+          <svg class="project-icon"><use href="#i-doc"></use></svg>
+          <div class="project-title">User Registration Validation</div>
+          <div class="project-desc">Check names, emails, passwords, and confirm-password matching, all in one form.</div>
+        </div>
+        <div class="project-card" tabindex="0">
+          <svg class="project-icon"><use href="#i-folder"></use></svg>
+          <div class="project-title">Configuration Loader</div>
+          <div class="project-desc">Read settings from the environment and validate them before the program even starts.</div>
+        </div>
+        <div class="project-card" tabindex="0">
+          <svg class="project-icon"><use href="#i-box"></use></svg>
+          <div class="project-title">Inventory Management Models</div>
+          <div class="project-desc">Model products, stock counts, and pricing rules so nothing negative or malformed ever gets stored.</div>
+        </div>
+        <div class="project-card" tabindex="0">
+          <svg class="project-icon"><use href="#i-list"></use></svg>
+          <div class="project-title">JSON Data Validator</div>
+          <div class="project-desc">Take a messy JSON file and report exactly which records are valid and which aren't, and why.</div>
+        </div>
+        <div class="project-card" tabindex="0">
+          <svg class="project-icon"><use href="#i-terminal"></use></svg>
+          <div class="project-title">CLI Configuration Parser</div>
+          <div class="project-desc">Validate command-line options a user types in, catching mistakes before the program runs.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      You've walked the full checkpoint. The next step is doing this with real data — that's where it actually sticks. <strong>The Data Checkpoint</strong> · Pydantic Field Notes · Sheryians AI School
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- visited / progress tracking ---------- */
+  var visited = new Set();
+  var stations = document.querySelectorAll(".station");
+  var navLinks = {};
+  document.querySelectorAll(".station-nav a").forEach(function(a){
+    navLinks[a.getAttribute("href").slice(1)] = a;
+  });
+  var counterNum = document.getElementById("counterNum");
+  var stampIcon = document.getElementById("counterStamp");
+
+  function markVisited(id){
+    if(visited.has(id)) return;
+    visited.add(id);
+    var link = navLinks[id];
+    if(link) link.classList.add("visited");
+    counterNum.textContent = visited.size;
+    stampIcon.classList.remove("pulse");
+    void stampIcon.offsetWidth;
+    stampIcon.classList.add("pulse");
+  }
+
+  var visitObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting && entry.intersectionRatio > 0.45){
+        markVisited(entry.target.id);
+      }
+    });
+  }, {threshold:[0,0.45,0.6]});
+  stations.forEach(function(s){ visitObserver.observe(s); });
+
+  var activeObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var link = navLinks[entry.target.id];
+      if(!link) return;
+      if(entry.isIntersecting){
+        Object.values(navLinks).forEach(function(l){ l.classList.remove("active"); });
+        link.classList.add("active");
+      }
+    });
+  }, {rootMargin:"-45% 0px -45% 0px", threshold:0});
+  stations.forEach(function(s){ activeObserver.observe(s); });
+
+  /* ---------- flip cards ---------- */
+  document.querySelectorAll(".flip-card").forEach(function(card){
+    function flip(){ card.classList.toggle("flipped"); }
+    card.addEventListener("click", flip);
+    card.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); flip(); }
+    });
+  });
+
+  /* ---------- accordions (none currently standalone, reserved) ---------- */
+
+  /* ---------- hero lane toggle ---------- */
+  var laneBtn = document.getElementById("laneToggleBtn");
+  var laneText = document.getElementById("laneToggleText");
+  var laneRisk = document.getElementById("laneRisk");
+  var laneSafe = document.getElementById("laneSafe");
+  var laneOn = false;
+  laneRisk.classList.add("active");
+  laneBtn.addEventListener("click", function(){
+    laneOn = !laneOn;
+    laneBtn.setAttribute("aria-pressed", laneOn);
+    if(laneOn){
+      laneRisk.classList.remove("active");
+      laneSafe.classList.add("active");
+      laneText.textContent = "See what happens without a checkpoint";
+    } else {
+      laneSafe.classList.remove("active");
+      laneRisk.classList.add("active");
+      laneText.textContent = "See it with a Pydantic checkpoint instead";
+    }
+  });
+
+  /* ---------- generic toggle switch helper ---------- */
+  function setupToggle(id, onChange){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var state = false;
+    function update(){
+      el.classList.toggle("on", state);
+      el.setAttribute("aria-checked", state);
+      onChange(state);
+    }
+    el.addEventListener("click", function(){ state = !state; update(); });
+    el.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); state = !state; update(); }
+    });
+    update();
+  }
+
+  /* Station 2: strictness */
+  setupToggle("strictToggle", function(on){
+    document.getElementById("strictLeftLabel").classList.toggle("active", !on);
+    document.getElementById("strictRightLabel").classList.toggle("active", on);
+    var pill = document.getElementById("strictPill");
+    var text = document.getElementById("strictResultText");
+    if(on){
+      pill.textContent = "REJECTED";
+      pill.className = "pill no";
+      text.textContent = 'A strict officer refuses to guess. "25" arrived as text, not as a whole number, so the form is turned away — even though a human can clearly tell what was meant.';
+    } else {
+      pill.textContent = "ACCEPTED";
+      pill.className = "pill ok";
+      text.textContent = 'A lenient officer understands what was meant and quietly converts "25" into the number 25 before letting it through. Convenient, but slightly less precise.';
+    }
+  });
+
+  /* Station 5: timing */
+  setupToggle("timingToggle", function(on){
+    document.getElementById("timingLeftLabel").classList.toggle("active", !on);
+    document.getElementById("timingRightLabel").classList.toggle("active", on);
+    var title = document.getElementById("timingTitle");
+    var text = document.getElementById("timingText");
+    if(on){
+      title.textContent = "After Cleanup";
+      text.textContent = "This check runs once the data has already been type-checked and tidied up by Pydantic's standard process — you're working with clean, trustworthy values.";
+    } else {
+      title.textContent = "Before Cleanup";
+      text.textContent = "This check runs on the raw incoming data, exactly as it arrived — before Pydantic has done any of its standard type checking or conversion.";
+    }
+  });
+
+  /* Station 6: serialization direction */
+  setupToggle("serialToggle", function(on){
+    document.getElementById("serialLeftLabel").classList.toggle("active", !on);
+    document.getElementById("serialRightLabel").classList.toggle("active", on);
+    var title = document.getElementById("serialTitle");
+    var text = document.getElementById("serialText");
+    if(on){
+      title.textContent = "Outgoing — Serialization";
+      text.textContent = "Your clean, validated form gets turned back into plain data — a dictionary or JSON text — ready to be sent over the internet or saved to a file.";
+    } else {
+      title.textContent = "Incoming — Deserialization";
+      text.textContent = "Raw data — like a file or a message from another system — gets checked and converted into a clean, trusted form your program can safely rely on.";
+    }
+  });
+
+  /* Station 7: config panel */
+  setupToggle("cfgExtraToggle", function(on){
+    var d = document.getElementById("cfgExtraDesc");
+    d.innerHTML = on
+      ? 'Decides what happens if data shows up with fields you never defined. <span class="effect">Currently: rejected outright.</span>'
+      : 'Decides what happens if data shows up with fields you never defined. <span class="effect">Currently: ignored quietly.</span>';
+  });
+  setupToggle("cfgFrozenToggle", function(on){
+    var d = document.getElementById("cfgFrozenDesc");
+    d.innerHTML = on
+      ? 'Decides if a form can be changed after it\'s filled out. <span class="effect">Currently: locked, like a sealed certificate.</span>'
+      : 'Decides if a form can be changed after it\'s filled out. <span class="effect">Currently: editable.</span>';
+  });
+  setupToggle("cfgStrictToggle", function(on){
+    var d = document.getElementById("cfgStrictDesc");
+    d.innerHTML = on
+      ? 'Decides if the checkpoint accepts close-enough formats. <span class="effect">Currently: exact format required, no conversions.</span>'
+      : 'Decides if the checkpoint accepts close-enough formats. <span class="effect">Currently: flexible matching allowed.</span>';
+  });
+  setupToggle("cfgAssignToggle", function(on){
+    var d = document.getElementById("cfgAssignDesc");
+    d.innerHTML = on
+      ? 'Decides if changing a value later gets re-checked against the rules. <span class="effect">Currently: every edit is re-validated.</span>'
+      : 'Decides if changing a value later gets re-checked against the rules. <span class="effect">Currently: not re-checked.</span>';
+  });
+
+  /* ---------- tabs (station 3) ---------- */
+  document.querySelectorAll(".tab-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var group = btn.closest(".tabs-widget");
+      group.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+      group.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  /* ---------- nested dolls (station 4) ---------- */
+  var n1 = document.getElementById("nestLevel1");
+  var n2 = document.getElementById("nestLevel2");
+  var n3 = document.getElementById("nestLevel3");
+  var a1 = document.getElementById("nestArrow1");
+  var a2 = document.getElementById("nestArrow2");
+  function openNest(el){
+    el.classList.remove("hidden");
+  }
+  n1.addEventListener("click", function(){ openNest(a1); openNest(n2); });
+  n1.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ openNest(a1); openNest(n2); } });
+  n2.addEventListener("click", function(){ openNest(a2); openNest(n3); });
+  n2.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ openNest(a2); openNest(n3); } });
+
+  /* ---------- enum demo (station 4) ---------- */
+  var enumFeedback = document.getElementById("enumFeedback");
+  document.querySelectorAll("#enumDemo .quiz-option").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll("#enumDemo .quiz-option").forEach(function(b){ b.classList.remove("correct","wrong"); });
+      var val = btn.dataset.val;
+      var allowed = ["starter","main course","dessert"];
+      enumFeedback.classList.add("show");
+      if(allowed.indexOf(val) > -1){
+        btn.classList.add("correct");
+        enumFeedback.textContent = '"' + val + '" is on the allowed list, so it passes straight through.';
+      } else {
+        btn.classList.add("wrong");
+        enumFeedback.textContent = '"' + val + '" is not one of the fixed choices, so the checkpoint rejects it immediately — no guessing allowed.';
+      }
+    });
+  });
+
+  /* ---------- scanner gallery (station 9) ---------- */
+  document.querySelectorAll(".scanner-card").forEach(function(card){
+    function toggle(){ card.classList.toggle("open"); }
+    card.addEventListener("click", toggle);
+    card.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } });
+  });
+
+  /* ---------- inspection slip (station 11) ---------- */
+  var inspectBtn = document.getElementById("inspectBtn");
+  var slip = document.getElementById("rejectionSlip");
+  inspectBtn.addEventListener("click", function(){
+    slip.classList.toggle("show");
+  });
+
+  /* ---------- project cards (station 12) ---------- */
+  document.querySelectorAll(".project-card").forEach(function(card){
+    function toggle(){ card.classList.toggle("open"); }
+    card.addEventListener("click", toggle);
+    card.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } });
+  });
+
+})();
+</script>
+
+</body>
+</html>
